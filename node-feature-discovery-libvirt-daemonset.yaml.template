@@ -34,7 +34,7 @@ spec:
 
         - image: kubevirt/libvirt
           command: ["/bin/sh","-c"]
-          args: ["libvirtd -d; while true; do virsh capabilities > /usr/share/virsh/virsh-capabilities; sleep 60; done"]
+          args: ["libvirtd -d; cp /usr/share/libvirt/cpu_map.xml /usr/share/virsh/; while true; do virsh capabilities > /usr/share/virsh/virsh_capabilities.xml; sleep 60; done"]
           imagePullPolicy: Always
           name: libvirt
           volumeMounts:
