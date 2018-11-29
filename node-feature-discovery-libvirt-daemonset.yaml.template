@@ -1,4 +1,65 @@
-
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-feature-discovery
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-feature-discovery
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-feature-discovery
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-feature-discovery
+subjects:
+- kind: ServiceAccount
+  name: node-feature-discovery
+  namespace: default
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    name: device-plugin-kvm
+  name: device-plugin-kvm
+spec:
+  selector:
+    matchLabels:
+      name: device-plugin-kvm
+  template:
+    metadata:
+      labels:
+        name: device-plugin-kvm
+    spec:
+      containers:
+      - name: device-plugin-kvm
+        image: quay.io/kubevirt/device-plugin-kvm
+        args: ["-v", "3", "-logtostderr"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: device-plugin
+            mountPath: /var/lib/kubelet/device-plugins
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -34,7 +95,7 @@ spec:
 
         - image: kubevirt/libvirt
           command: ["/bin/sh","-c"]
-          args: ["libvirtd -d; cp /usr/share/libvirt/cpu_map.xml /usr/share/virsh/; while true; do virsh capabilities > /usr/share/virsh/virsh_capabilities.xml; sleep 60; done"]
+          args: ["libvirtd -d; chmod o+rw /dev/kvm; while true; do virsh domcapabilities --machine q35 --arch x86_64 --virttype kvm > /usr/share/virsh/virsh_domcapabilities.xml; sleep 60; done"]
           imagePullPolicy: Always
           name: libvirt
           volumeMounts:
