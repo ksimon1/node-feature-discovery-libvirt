@@ -98,6 +98,11 @@ spec:
           args: ["libvirtd -d; chmod o+rw /dev/kvm; while true; do virsh domcapabilities --machine q35 --arch x86_64 --virttype kvm > /usr/share/virsh/virsh_domcapabilities.xml; sleep 60; done"]
           imagePullPolicy: Always
           name: libvirt
+          resources:
+            requests:
+              devices.kubevirt.io/kvm: "1"
+            limits:
+              devices.kubevirt.io/kvm: "1"
           volumeMounts:
             - name: virsh-share
               mountPath: "/usr/share/virsh/"
