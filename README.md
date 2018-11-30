@@ -10,4 +10,4 @@ kubectl exec -it <pod name> --container node-feature-discovery -- cat /usr/share
 ```
 
 **Future plans:**
-Parse libvirt output and integrate it into NFD.
+Parse libvirt output and integrate it into NFD - [nfd-host-supported-cpus](https://github.com/ksimon1/nfd-host-supported-cpus)
